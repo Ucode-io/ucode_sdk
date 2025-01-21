@@ -72,6 +72,7 @@ type (
 	}
 
 	GetListClientApiResp struct {
+		Count    int32            `json:"count"`
 		Response []map[string]any `json:"response"`
 	}
 	// GetListAggregationClientApiResponse  This is get list aggregation response
