@@ -37,7 +37,9 @@ type (
 	// Create function response body >>>>> CREATE
 	Datas struct {
 		Data struct {
-			Data map[string]any `json:"data"`
+			Data struct {
+				Data map[string]any `json:"data"`
+			} `json:"data"`
 		} `json:"data"`
 	}
 
