@@ -71,7 +71,7 @@ func Handle() http.HandlerFunc {
 
 		updateBody := map[string]any{
 			"title": fmt.Sprintf("%d %s", time.Now().Unix(), "updated"),
-			"guid":  createResp.Data.Data.Data["guid"],
+			"guid":  createResp.Data.Data["guid"],
 		}
 
 		updateResp, _, err := gg.Items("order_abdurahmon").Update(updateBody).DisableFaas(true).ExecSingle()
@@ -85,7 +85,7 @@ func Handle() http.HandlerFunc {
 		marssss, _ = json.Marshal(updateResp)
 		fmt.Println("UPDATE RESP: ", string(marssss))
 
-		_, err = gg.Items("order_abdurahmon").Delete().Single(cast.ToString(createResp.Data.Data.Data["guid"])).DisableFaas(true).Exec()
+		_, err = gg.Items("order_abdurahmon").Delete().Single(cast.ToString(createResp.Data.Data["guid"])).DisableFaas(true).Exec()
 		if err != nil {
 			errorResponse.ClientErrorMessage = "Error on getting request body"
 			errorResponse.ErrorMessage = err.Error()
