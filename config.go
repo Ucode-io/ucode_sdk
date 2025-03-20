@@ -11,4 +11,7 @@ type Config struct {
 	ProjectId      string
 	RequestTimeout time.Duration
 	BaseAuthUrl    string
+	MQTTBroker     string
+	MQTTUsername   string
+	MQTTPassword   string
 }

@@ -7,12 +7,14 @@ import (
 	"net/http"
 	"time"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/spf13/cast"
 	sdk "github.com/ucode-io/ucode_sdk"
 )
 
 var (
 	baseUrl = "https://api.client.u-code.io"
+	appId   = ""
 )
 
 /*
@@ -24,11 +26,6 @@ When the function invoked?
 What does it do?
 - Explain the purpose of the function.(O'zbekcha yozilsa ham bo'ladi.)
 */
-// func main() {
-// 	data := `{"data":{"app_id":"P-CgtoLQxIfoXuz081FuZCenSJbUSMCjOf","object_data":{"test_id":"41574168-4d2f-481a-8c6f-bc60be37e674"}}}`
-// 	resp := Handle([]byte(data))
-// 	fmt.Println(resp)
-// }
 
 // Handle a serverless request
 func Handle() http.HandlerFunc {
@@ -48,14 +45,21 @@ func Handle() http.HandlerFunc {
 		)
 
 		gg := sdk.New(&sdk.Config{
-			BaseURL: baseUrl,
-			AppId:   "P-bgh4cmZxaWTXWscpH6sUa9gGlsuvKyZO",
-			// AuthBaseURL: authBaseURL,
+			BaseURL:   baseUrl,
+			AppId:     appId,
 			ProjectId: "f05fdd8d-f949-4999-9593-5686ac272993",
+			// AuthBaseURL: authBaseURL,
 		})
 		body := map[string]any{
 			"title": fmt.Sprintf("%d", time.Now().Unix()),
 		}
+
+		client, err := gg.ConnectToEMQX()
+		if err != nil {
+			return
+		}
+
+		client.Subscribe("topic", 1, func(c mqtt.Client, m mqtt.Message) {})
 
 		createResp, _, err := gg.Items("order_abdurahmon").Create(body).DisableFaas(true).Exec()
 		if err != nil {
@@ -66,12 +70,9 @@ func Handle() http.HandlerFunc {
 			return
 		}
 
-		marssss, _ := json.Marshal(createResp)
-		fmt.Println("CREATE RESP: ", string(marssss))
-
 		updateBody := map[string]any{
 			"title": fmt.Sprintf("%d %s", time.Now().Unix(), "updated"),
-			"guid":  createResp.Data.Data.Data["guid"],
+			"guid":  createResp.Data.Data["guid"],
 		}
 
 		updateResp, _, err := gg.Items("order_abdurahmon").Update(updateBody).DisableFaas(true).ExecSingle()
@@ -82,10 +83,10 @@ func Handle() http.HandlerFunc {
 			handleResponse(w, returnError(errorResponse), http.StatusBadRequest)
 			return
 		}
-		marssss, _ = json.Marshal(updateResp)
-		fmt.Println("UPDATE RESP: ", string(marssss))
 
-		_, err = gg.Items("order_abdurahmon").Delete().Single(cast.ToString(createResp.Data.Data.Data["guid"])).DisableFaas(true).Exec()
+		fmt.Println(updateResp)
+
+		_, err = gg.Items("order_abdurahmon").Delete().Single(cast.ToString(createResp.Data.Data["guid"])).DisableFaas(true).Exec()
 		if err != nil {
 			errorResponse.ClientErrorMessage = "Error on getting request body"
 			errorResponse.ErrorMessage = err.Error()
@@ -109,65 +110,23 @@ func Handle() http.HandlerFunc {
 			handleResponse(w, returnError(errorResponse), http.StatusBadRequest)
 			return
 		}
-
-		marssss, _ = json.Marshal(getListResp)
-		fmt.Println("GETLIST RESP: ", string(marssss))
+		fmt.Println(getListResp)
 
 		fileResp, _, err := gg.Files().Upload("models.go").Exec()
 		if err != nil {
-			fmt.Println("ERROR: ", err)
 			errorResponse.ClientErrorMessage = "Error on getting request body"
 			errorResponse.ErrorMessage = err.Error()
 			errorResponse.StatusCode = http.StatusInternalServerError
 			handleResponse(w, returnError(errorResponse), http.StatusBadRequest)
 			return
 		}
-		marssss, _ = json.Marshal(fileResp)
-		fmt.Println("FILE RESP: ", string(marssss))
 
-		// ucodeApi := sdk.NewSDK(&sdk.Config{
-		// 	BaseURL: baseUrl,
-		// 	AppId:   "P-kL7M9h0NarpDfsSTzBPhDGOE4H9rUPl5",
-		// })
-
-		// datalens1-new-template-nats-publisher
-		// faasResp, _, err := ucodeApi.Function("datalens1-new-template-nats-publisher").Invoke(map[string]any{}).Exec()
-		// if err != nil {
-		// 	errorResponse.ClientErrorMessage = "Error on getting request body"
-		// 	errorResponse.ErrorMessage = err.Error()
-		// 	errorResponse.StatusCode = http.StatusInternalServerError
-		// 	handleResponse(w, returnError(errorResponse), http.StatusBadRequest)
-		// 	return
-		// }
-		// marssss, _ = json.Marshal(faasResp)
-		// fmt.Println("FAAS RESP: ", string(marssss))
+		fmt.Println(fileResp)
 
 		heders := map[string]string{
 			"Resource-Id":    "b74a3b18-6531-45fc-8e05-0b9709af8faa",
 			"Environment-Id": "e8b82a93-b87f-4103-abc4-b5a017f540a4",
 		}
-
-		// body = map[string]any{
-		// 	"data": map[string]any{
-		// 		"type":           "phone",
-		// 		"name":           fmt.Sprintf("%s %d", "otashjkee", time.Now().Unix()),
-		// 		"phone":          "+998490000010",
-		// 		"client_type_id": "1ade0441-4798-4183-839f-40a71e3dcad8",
-		// 		"role_id":        "b4112b2b-82db-4942-9122-f3f8c58db34a",
-		// 	},
-		// }
-
-		// registerResp, _, err := gg.Auth().Register(body).Headers(heders).Exec()
-		// if err != nil {
-		// 	errorResponse.ClientErrorMessage = "Error on getting request body"
-		// 	errorResponse.ErrorMessage = err.Error()
-		// 	errorResponse.StatusCode = http.StatusInternalServerError
-		// 	handleResponse(w, returnError(errorResponse), http.StatusBadRequest)
-		// 	return
-		// }
-
-		// marssss, _ = json.Marshal(registerResp)
-		// fmt.Println("REGISTER RESP: ", string(marssss))
 
 		body = map[string]any{
 			"data": map[string]any{
@@ -189,8 +148,7 @@ func Handle() http.HandlerFunc {
 			return
 		}
 
-		marssss, _ = json.Marshal(loginWithOptionResp)
-		fmt.Println("LOGIN WITH OPTION RESP: ", string(marssss))
+		fmt.Println(loginWithOptionResp)
 
 		body = map[string]any{
 			"username":    "integrationtestgo",
@@ -201,7 +159,6 @@ func Handle() http.HandlerFunc {
 
 		loginResp, _, err := gg.Auth().Login(body).Headers(heders).Exec()
 		if err != nil {
-			fmt.Println("login error: ", err)
 			errorResponse.ClientErrorMessage = "Error on getting request body"
 			errorResponse.ErrorMessage = err.Error()
 			errorResponse.StatusCode = http.StatusInternalServerError
@@ -209,8 +166,7 @@ func Handle() http.HandlerFunc {
 			return
 		}
 
-		marssss, _ = json.Marshal(loginResp)
-		fmt.Println("LOGIN RESP: ", string(marssss))
+		fmt.Println(loginResp)
 
 		send := sdk.New(&sdk.Config{
 			BaseURL:   baseUrl,
@@ -228,7 +184,6 @@ func Handle() http.HandlerFunc {
 		}
 		sendResp, _, err := send.Auth().SendCode(body).Headers(heders).Exec()
 		if err != nil {
-			fmt.Println("send ocde error: ", err)
 			errorResponse.ClientErrorMessage = "Error on getting request body"
 			errorResponse.ErrorMessage = err.Error()
 			errorResponse.StatusCode = http.StatusInternalServerError
@@ -236,8 +191,7 @@ func Handle() http.HandlerFunc {
 			return
 		}
 
-		marssss, _ = json.Marshal(sendResp)
-		fmt.Println("CODE RESP: ", string(marssss))
+		fmt.Println(sendResp)
 
 		requestByte, err := io.ReadAll(r.Body)
 		if err != nil {

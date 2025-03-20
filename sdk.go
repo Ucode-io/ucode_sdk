@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 type UcodeApis interface {
@@ -66,6 +68,7 @@ type UcodeApis interface {
 	Function(path string) FunctionI
 	Config() *Config
 	DoRequest(url string, method string, body any, headers map[string]string) ([]byte, error)
+	ConnectToEMQX() (mqtt.Client, error)
 }
 
 func New(cfg *Config) UcodeApis {
