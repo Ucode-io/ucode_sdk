@@ -57,7 +57,7 @@ func (c *UploadFile) Exec() (CreateFileResponse, Response, error) {
 		writer        *multipart.Writer
 		response      = Response{Status: "done"}
 		createdObject CreateFileResponse
-		url           = fmt.Sprintf("%s/v1/files/folder_upload?folder_name=Media", c.config.BaseURL)
+		url           = fmt.Sprintf("%s/v1/files/folder_upload?folder_name=Media", BaseURL)
 	)
 
 	file, err := os.Open(c.path)
@@ -124,7 +124,7 @@ func (f *APIFiles) Delete(fileID string) *DeleteFile {
 func (a *DeleteFile) Exec() (Response, error) {
 	var (
 		response = Response{Status: "done"}
-		url      = fmt.Sprintf("%s/v1/files/%s", a.config.BaseURL, a.id)
+		url      = fmt.Sprintf("%s/v1/files/%s", BaseURL, a.id)
 	)
 
 	var appId = a.config.AppId

@@ -45,7 +45,6 @@ func Handle() http.HandlerFunc {
 		)
 
 		gg := sdk.New(&sdk.Config{
-			BaseURL:   baseUrl,
 			AppId:     appId,
 			ProjectId: "f05fdd8d-f949-4999-9593-5686ac272993",
 			// AuthBaseURL: authBaseURL,
@@ -169,7 +168,6 @@ func Handle() http.HandlerFunc {
 		fmt.Println(loginResp)
 
 		send := sdk.New(&sdk.Config{
-			BaseURL:   baseUrl,
 			ProjectId: "0f111e78-3a93-4bec-945a-2a77e0e0a82d",
 		})
 

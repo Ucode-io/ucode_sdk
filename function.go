@@ -31,7 +31,7 @@ func (f *APIFunction) Exec() (FunctionResponse, Response, error) {
 	var (
 		response     = Response{Status: "done"}
 		invokeObject FunctionResponse
-		url          = fmt.Sprintf("%s/v1/invoke_function/%s", f.config.BaseURL, f.path)
+		url          = fmt.Sprintf("%s/v1/invoke_function/%s", BaseURL, f.path)
 	)
 
 	var appId = f.config.AppId
