@@ -93,7 +93,7 @@ func (c *CreateItem) Exec() (Datas, Response, error) {
 			Status: "done",
 		}
 		createdObject Datas
-		url           = fmt.Sprintf("%s/v2/items/%s?from-ofs=%t", c.config.BaseURL, c.collection, c.data.DisableFaas)
+		url           = fmt.Sprintf("%s/v2/items/%s?from-ofs=%t", BaseURL, c.collection, c.data.DisableFaas)
 	)
 
 	var appId = c.config.AppId
@@ -140,7 +140,7 @@ func (u *UpdateItem) ExecSingle() (ClientApiUpdateResponse, Response, error) {
 			Status: "done",
 		}
 		updateObject ClientApiUpdateResponse
-		url          = fmt.Sprintf("%s/v2/items/%s?from-ofs=%t", u.config.BaseURL, u.collection, u.data.DisableFaas)
+		url          = fmt.Sprintf("%s/v2/items/%s?from-ofs=%t", BaseURL, u.collection, u.data.DisableFaas)
 	)
 
 	var appId = u.config.AppId
@@ -173,7 +173,7 @@ func (a *UpdateItem) ExecMultiple() (ClientApiMultipleUpdateResponse, Response, 
 			Status: "done",
 		}
 		multipleUpdateObject ClientApiMultipleUpdateResponse
-		url                  = fmt.Sprintf("%s/v2/items/%s?from-ofs=%t", a.config.BaseURL, a.collection, a.data.DisableFaas)
+		url                  = fmt.Sprintf("%s/v2/items/%s?from-ofs=%t", BaseURL, a.collection, a.data.DisableFaas)
 	)
 
 	var appId = a.config.AppId
@@ -233,7 +233,7 @@ func (a *DeleteItem) Exec() (Response, error) {
 		response = Response{
 			Status: "done",
 		}
-		url = fmt.Sprintf("%s/v2/items/%s/%v?from-ofs=%t", a.config.BaseURL, a.collection, a.id, a.disableFaas)
+		url = fmt.Sprintf("%s/v2/items/%s/%v?from-ofs=%t", BaseURL, a.collection, a.id, a.disableFaas)
 	)
 
 	var appId = a.config.AppId
@@ -258,7 +258,7 @@ func (a *DeleteMultipleItem) Exec() (Response, error) {
 		response = Response{
 			Status: "done",
 		}
-		url = fmt.Sprintf("%s/v2/items/%s?from-ofs=%t", a.config.BaseURL, a.collection, a.disableFaas)
+		url = fmt.Sprintf("%s/v2/items/%s?from-ofs=%t", BaseURL, a.collection, a.disableFaas)
 	)
 
 	var appId = a.config.AppId
@@ -301,7 +301,7 @@ func (a *GetSingleItem) Exec() (ClientApiResponse, Response, error) {
 	var (
 		response  = Response{Status: "done"}
 		getObject ClientApiResponse
-		url       = fmt.Sprintf("%s/v2/items/%s/%v?from-ofs=%t", a.config.BaseURL, a.collection, a.guid, true)
+		url       = fmt.Sprintf("%s/v2/items/%s/%v?from-ofs=%t", BaseURL, a.collection, a.guid, true)
 	)
 
 	var appId = a.config.AppId
@@ -397,7 +397,7 @@ func (a *GetListItem) Exec() (GetListClientApiResponse, Response, error) {
 	var (
 		response = Response{Status: "done"}
 		listSlim GetListClientApiResponse
-		url      = fmt.Sprintf("%s/v2/items/%s?from-ofs=%t", a.config.BaseURL, a.collection, true)
+		url      = fmt.Sprintf("%s/v2/items/%s?from-ofs=%t", BaseURL, a.collection, true)
 	)
 
 	reqObject, err := json.Marshal(a.request.Data)
@@ -446,7 +446,7 @@ func (a *GetListAggregation) ExecAggregation() (GetListAggregationClientApiRespo
 	var (
 		response           = Response{Status: "done"}
 		getListAggregation GetListAggregationClientApiResponse
-		url                = fmt.Sprintf("%s/v2/items/%s/aggregation", a.config.BaseURL, a.collection)
+		url                = fmt.Sprintf("%s/v2/items/%s/aggregation", BaseURL, a.collection)
 	)
 
 	var appId = a.config.AppId

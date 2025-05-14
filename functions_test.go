@@ -40,7 +40,7 @@ func TestEndToEnd(t *testing.T) {
 
 	// // check DoRequest method
 	t.Run("TestDoRequest", func(t *testing.T) {
-		ucodeApi := New(&Config{BaseURL: baseUrl})
+		ucodeApi := New(&Config{})
 
 		header := map[string]string{
 			"authorization": "API-KEY",
@@ -112,8 +112,8 @@ func TestEndToEnd(t *testing.T) {
 	})
 
 	var (
-		ucodeApi   = New(&Config{BaseURL: baseUrl, AppId: mongoAppId})
-		ucodeApiPg = New(&Config{BaseURL: baseUrl, AppId: postgresAppId})
+		ucodeApi   = New(&Config{AppId: mongoAppId})
+		ucodeApiPg = New(&Config{AppId: postgresAppId})
 	)
 
 	t.Run("createInMongo", func(t *testing.T) {
