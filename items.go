@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	nurl "net/url"
 )
 
 func (u *object) Items(collection string) ItemsI {
@@ -414,8 +415,9 @@ func (a *GetListItem) Exec() (GetListClientApiResponse, Response, error) {
 		a.limit = 10
 	}
 
-	url = fmt.Sprintf("%s&data=%s&offset=%d&limit=%d", url, string(reqObject), (a.page-1)*a.limit, a.limit)
+	encodedData := nurl.QueryEscape(string(reqObject))
 
+	url = fmt.Sprintf("%s&data=%s&offset=%d&limit=%d", url, encodedData, (a.page-1)*a.limit, a.limit)
 	var appId = a.config.AppId
 
 	header := map[string]string{
