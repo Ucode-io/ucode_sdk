@@ -1,214 +1,355 @@
-# UCode SDK
-UCode SDK is a Go package that provides a simple and efficient way to interact with the UCode API. This SDK offers various methods to perform CRUD operations, manage relationships, and handle data retrieval from the UCode platform.
+# Ucode SDK for Go
+
+A comprehensive Go SDK for interacting with the Ucode API, providing easy-to-use methods for CRUD operations, querying, and data management.
 
 ## Table of Contents
-
-1. [Installation](#installation)
-2. [Configuration](#configuration)
-3. [Usage](#usage)
-   - [Creating Objects](#creating-objects)
-   - [Retrieving Objects](#retrieving-objects)
-   - [Updating Objects](#updating-objects)
-   - [Deleting Objects](#deleting-objects)
-4. [Error Handling](#error-handling)
-5. [Examples](#examples)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Configuration](#configuration)
+- [Basic Usage](#basic-usage)
+- [API Reference](#api-reference)
+- [Examples](#examples)
+- [Error Handling](#error-handling)
+- [Best Practices](#best-practices)
 
 ## Installation
-
-To install the UCode SDK, use the following command:
 
 ```bash
 go get github.com/ucode-io/ucode_sdk
 ```
 
+## Quick Start
+
+```go
+import (
+    sdk "github.com/ucode-io/ucode_sdk"
+)
+
+// Initialize the SDK
+newsdk := sdk.New(&sdk.Config{
+    BaseURL:   "https://api.your-domain.com",
+    AppId:     "your-app-id",
+    ProjectId: "your-project-id",
+})
+```
+
 ## Configuration
 
-Before using the SDK, you need to configure it with your UCode API credentials and settings.
+The SDK requires the following configuration parameters:
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `BaseURL` | string | The base URL of your Ucode API |
+| `AppId` | string | Your application ID |
+| `ProjectId` | string | Your project ID |
+
+## Basic Usage
+
+### Creating Records
 
 ```go
-import "github.com/ucode-io/ucode_sdk"
-
-config := &ucodesdk.Config{
-    BaseURL:        "https://api.client.u-code.io",
-    FunctionName:   "your-function-name",
-    AppId: "your_app_id"
+// Create a new record
+body := map[string]any{
+    "title": "New Order",
+    "status": "pending",
 }
 
-// Create a new UCode API client
-ucodeApi := ucodesdk.NewSDK(config)
-```
-
-Make sure to set the `APP_ID` environment variable before running your application.
-
-## Usage
-
-### Creating Objects
-
-To create a new object in a specific table:
-
-```go
-createRequest :=  map[string]any{
-        "name":  "Example Object",
-        "price": 100,
-}
-
-createdObject, response, err := ucodeApi.Items("your_table_slug").Create(createRequest).Exec()
+createResp, _, err := newsdk.Items("order").Create(body).DisableFaas(true).Exec()
 if err != nil {
-    log.Fatalf("Error creating object: %v", err)
+    // Handle error
 }
-
-fmt.Printf("Created object: %+v\n", createdObject)
 ```
 
-### Retrieving Objects
-
-#### Get List Slim
+### Updating Records
 
 ```go
+// Update an existing record
+updateBody := map[string]any{
+    "title": "Updated Order",
+    "status": "processed",
+    "guid":  recordGuid, // Required for updates
+}
 
-objectList, response, err := ucodeApi.Items("your_table_slug").
+updateResp, _, err := newsdk.Items("order").Update(updateBody).DisableFaas(true).ExecSingle()
+if err != nil {
+    // Handle error
+}
+```
+
+### Deleting Records
+
+```go
+// Delete a record by GUID
+_, err = newsdk.Items("order").Delete().Single(recordGuid).DisableFaas(true).Exec()
+if err != nil {
+    // Handle error
+}
+```
+
+### Querying Records
+
+#### Basic List Query
+```go
+// Get a list of records with pagination
+getListResp, _, err := newsdk.Items("order").
     GetList().
     Page(1).
-    Limit(10).
-    Filter(map[string]any{}). // add any filters here
-    WithRelation(true).
+    Limit(20).
+    Sort(map[string]any{"created_at": -1}).
+    Filter(map[string]any{"status": []string{"new"}}).
     Exec()
-if err != nil {
-    log.Fatalf("Error retrieving object list: %v", err)
-}
-
-fmt.Printf("Retrieved objects: %+v\n", objectList)
 ```
 
-#### Get List Aggregation
-
-To perform an aggregation query (MongoDB only):
-
+#### Advanced Filtering
 ```go
-aggregationPipeline := []map[string]any{
-    {
-        "$match": map[string]any{
-            "field": map[string]any{
-                "$exists": true,
-                "$eq":     "value",
-            },
-        },
-    },
-    {
-        "$group": map[string]any{
-            "_id": "$group_field",
-            "count": map[string]any{
-                "$sum": 1,
-            },
-        },
-    },
-}
-
-aggregationRequest :=  map[string]any{
-    "pipelines": aggregationPipeline,
-}
-
-aggregationResult, response, err := ucodeApi.Items("your_table_slug").
+// Query with complex filters
+getListResp, _, err := newsdk.Items("order_product").
     GetList().
-    Pipelines(aggregationRequest).
-    ExecAggregation()
-if err != nil {
-    log.Fatalf("Error performing aggregation: %v", err)
-}
-
-fmt.Printf("Aggregation result: %+v\n", aggregationResult)
-```
-
-### Updating Objects
-
-#### Update Single Object
-
-```go
-updateRequest := map[string]any{
-    "guid":  "object_guid",
-    "name":  "Updated Name",
-    "price": 150,
-}
-
-updatedObject, response, err := ucodeApi.Items("your_table_slug").
-    Update(updatedObject).
-    DisableFaas(false). //default true
-    ExecSingle()
-if err != nil {
-    log.Fatalf("Error updating object: %v", err)
-}
-
-fmt.Printf("Updated object: %+v\n", updatedObject)
-```
-
-#### Update Multiple Objects(add is_new: true for multiple create)
-
-```go
-multiUpdateRequest := map[string]any{
-    "objects": []map[string]any{
-        {"guid": "object1_guid", "name": "Updated Name 1"},
-        {"guid": "object2_guid", "name": "Updated Name 2"},
-    },
-}
-
-updatedObjects, response, err := ucodeApi.Items("your_table_slug").
-    Update(updatedObject).
-    ExecMultiple()
-if err != nil {
-    log.Fatalf("Error updating multiple objects: %v", err)
-}
-
-fmt.Printf("Updated objects: %+v\n", updatedObjects)
-```
-
-### Deleting Objects
-
-#### Delete Single Object
-
-```go
-
-response, err := ucodeApi.Items("your_table_slug").
-    Delete().
-    DisableFaas(false).
-    Single("object_guid").
+    Page(1).
+    Limit(20).
+    Filter(map[string]any{
+        "quantity": map[string]any{
+            "$gte": 4, // Greater than or equal to 4
+        },
+    }).
     Exec()
-if err != nil {
-    log.Fatalf("Error deleting object: %v", err)
-}
-
-fmt.Printf("Delete response: %+v\n", response)
 ```
 
-#### Delete Multiple Objects
+## API Reference
+
+### SDK Methods
+
+#### `Items(tableName string)`
+Returns an Items instance for the specified table.
+
+#### Items Methods
+
+##### Create Operations
+- `Create(body map[string]any)` - Creates a new record
+- `DisableFaas(disable bool)` - Disables FaaS execution
+- `Exec()` - Executes the operation
+
+##### Update Operations
+- `Update(body map[string]any)` - Updates a record
+- `ExecSingle()` - Executes update for a single record
+
+##### Delete Operations
+- `Delete()` - Prepares delete operation
+- `Single(guid string)` - Specifies single record to delete
+
+##### Query Operations
+- `GetList()` - Prepares list query
+- `Page(page int)` - Sets pagination page
+- `Limit(limit int)` - Sets result limit
+- `Sort(sort map[string]any)` - Sets sorting criteria
+- `Filter(filter map[string]any)` - Sets filtering criteria
+
+### Filter Operators
+
+The SDK supports MongoDB-style query operators:
+
+| Operator | Description | Example |
+|----------|-------------|---------|
+| `$gte` | Greater than or equal | `{"quantity": {"$gte": 4}}` |
+| `$gt` | Greater than | `{"price": {"$gt": 100}}` |
+| `$lte` | Less than or equal | `{"quantity": {"$lte": 10}}` |
+| `$lt` | Less than | `{"price": {"$lt": 1000}}` |
+| `$in` | In array | `{"status": {"$in": ["new", "pending"]}}` |
+| `$nin` | Not in array | `{"status": {"$nin": ["cancelled"]}}` |
+
+### Sorting
+
+Sorting uses MongoDB-style syntax:
+- `1` for ascending order
+- `-1` for descending order
 
 ```go
-
-response, err := ucodeApi.Items("your_table_slug").
-    Delete().
-    Multiple([]string{"object1_guid", "object2_guid"}).
-    Exec()
-if err != nil {
-    log.Fatalf("Error deleting multiple objects: %v", err)
-}
-
-fmt.Printf("Multiple delete response: %+v\n", response)
-```
-
-## Error Handling
-
-All methods in the SDK return an error as the last return value. Always check for errors and handle them appropriately in your application.
-
-```go
-if err != nil {
-    log.Printf("An error occurred: %v", err)
-    // Handle the error (e.g., retry the operation, log it, or return it to the user)
-}
+Sort(map[string]any{
+    "created_at": -1,  // Descending
+    "title": 1,        // Ascending
+})
 ```
 
 ## Examples
 
-For more detailed examples and use cases, please refer to the `function_test.go` file in the SDK repository. This file contains comprehensive test cases that demonstrate how to use various features of the SDK.
+### Complete CRUD Example
 
----
+```go
+package main
 
-For any issues, feature requests, or questions, please open an issue in the GitHub repository or contact the maintainers.
+import (
+    "fmt"
+    "log"
+    "time"
+    
+    "github.com/spf13/cast"
+    sdk "github.com/ucode-io/ucode_sdk"
+)
+
+func main() {
+    // Initialize SDK
+    newsdk := sdk.New(&sdk.Config{
+        BaseURL:   "https://api.your-domain.com",
+        AppId:     "your-app-id",
+        ProjectId: "your-project-id",
+    })
+    
+    // Create
+    body := map[string]any{
+        "title": fmt.Sprintf("Order_%d", time.Now().Unix()),
+        "status": "new",
+    }
+    
+    createResp, _, err := newsdk.Items("order").Create(body).DisableFaas(true).Exec()
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    guid := cast.ToString(createResp.Data.Data["guid"])
+    fmt.Printf("Created record with GUID: %s\n", guid)
+    
+    // Update
+    updateBody := map[string]any{
+        "title": fmt.Sprintf("Updated_Order_%d", time.Now().Unix()),
+        "status": "processed",
+        "guid":  guid,
+    }
+    
+    updateResp, _, err := newsdk.Items("order").Update(updateBody).DisableFaas(true).ExecSingle()
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    fmt.Printf("Updated record: %+v\n", updateResp)
+    
+    // Query
+    listResp, _, err := newsdk.Items("order").
+        GetList().
+        Page(1).
+        Limit(10).
+        Sort(map[string]any{"created_at": -1}).
+        Filter(map[string]any{"status": "processed"}).
+        Exec()
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    fmt.Printf("Found %d records\n", len(listResp.Data.Data))
+    
+    // Delete
+    _, err = newsdk.Items("order").Delete().Single(guid).DisableFaas(true).Exec()
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    fmt.Println("Record deleted successfully")
+}
+```
+
+### HTTP Handler Example
+
+```go
+func Handle() http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        newsdk := sdk.New(&sdk.Config{
+            BaseURL:   os.Getenv("UCODE_BASE_URL"),
+            AppId:     os.Getenv("UCODE_APP_ID"),
+            ProjectId: os.Getenv("UCODE_PROJECT_ID"),
+        })
+        
+        // Your business logic here
+        body := map[string]any{
+            "title": fmt.Sprintf("Order_%d", time.Now().Unix()),
+        }
+        
+        createResp, _, err := newsdk.Items("order").Create(body).DisableFaas(true).Exec()
+        if err != nil {
+            handleError(w, "Failed to create order", err)
+            return
+        }
+        
+        response := sdk.Response{
+            Status: "success",
+            Data:   createResp.Data,
+        }
+        
+        handleResponse(w, response, http.StatusOK)
+    }
+}
+```
+
+## Error Handling
+
+Always check for errors when making API calls:
+
+```go
+createResp, _, err := newsdk.Items("order").Create(body).DisableFaas(true).Exec()
+if err != nil {
+    // Log the error
+    log.Printf("API Error: %v", err)
+    
+    // Return appropriate error response
+    return sdk.Response{
+        Status: "error",
+        Data:   map[string]interface{}{"message": "Failed to create record", "error": err.Error()},
+    }
+}
+```
+
+## Best Practices
+
+1. **Environment Variables**: Store sensitive configuration in environment variables
+   ```go
+   newsdk := sdk.New(&sdk.Config{
+       BaseURL:   os.Getenv("UCODE_BASE_URL"),
+       AppId:     os.Getenv("UCODE_APP_ID"),
+       ProjectId: os.Getenv("UCODE_PROJECT_ID"),
+   })
+   ```
+
+2. **Error Handling**: Always handle errors appropriately
+   ```go
+   if err != nil {
+       log.Printf("Operation failed: %v", err)
+       // Handle error appropriately
+   }
+   ```
+
+3. **Use DisableFaas**: When you don't need FaaS execution, disable it for better performance
+   ```go
+   .DisableFaas(true)
+   ```
+
+4. **Pagination**: Always use pagination for large datasets
+   ```go
+   .Page(1).Limit(100)
+   ```
+
+5. **Specific Filters**: Use specific filters to reduce data transfer
+   ```go
+   .Filter(map[string]any{"status": "active"})
+   ```
+
+6. **Proper Sorting**: Always specify sorting for consistent results
+   ```go
+   .Sort(map[string]any{"created_at": -1})
+   ```
+
+## Response Structure
+
+All API responses follow this structure:
+
+```go
+type Response struct {
+    Status string                 `json:"status"`
+    Data   map[string]interface{} `json:"data"`
+}
+```
+
+## Support
+
+For issues, feature requests, or questions, please refer to the [Ucode documentation](https://docs.ucode.io) or contact support.
+
+## License
+
+This SDK is licensed under the MIT License.

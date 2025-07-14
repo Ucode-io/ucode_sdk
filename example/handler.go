@@ -40,6 +40,7 @@ func Handle() http.HandlerFunc {
 			"guid":  createResp.Data.Data["guid"],
 		}
 
+		// Add is_new: true for multiple create
 		updateResp, _, err := newsdk.Items("order").Update(updateBody).DisableFaas(true).ExecSingle()
 		if err != nil {
 			clientErrorMessage = "Error on getting request body"
