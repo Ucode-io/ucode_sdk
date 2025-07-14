@@ -5,31 +5,6 @@ type (
 		Data     map[string]any `json:"data"`
 		IsCached bool           `json:"is_cached"`
 	}
-
-	Argument struct {
-		AppId       string  `json:"app_id"`
-		TableSlug   string  `json:"table_slug"`
-		Request     Request `json:"request"`
-		DisableFaas bool    `json:"disable_faas"`
-	}
-
-	ArgumentWithPegination struct {
-		AppId       string  `json:"app_id"`
-		TableSlug   string  `json:"table_slug"`
-		Request     Request `json:"request"`
-		DisableFaas bool    `json:"disable_faas"`
-		Limit       int     `json:"limit"`
-		Page        int     `json:"page"`
-	}
-
-	Data struct {
-		AppId      string         `json:"app_id"`
-		Method     string         `json:"method"`
-		ObjectData map[string]any `json:"object_data"`
-		ObjectIds  []string       `json:"object_ids"`
-		TableSlug  string         `json:"table_slug"`
-		UserId     string         `json:"user_id"`
-	}
 )
 
 // Response structures
