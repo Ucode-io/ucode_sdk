@@ -60,7 +60,8 @@ func Handle() http.HandlerFunc {
 			GetList().
 			Page(1).
 			Limit(20).
-			Sort(map[string]any{"title": 1}).
+			Sort(map[string]any{"created_at": -1}).
+			Filter(map[string]any{"status": []string{"new"}}).
 			Exec()
 		if err != nil {
 			clientErrorMessage = "Error on getting request body"
@@ -69,14 +70,22 @@ func Handle() http.HandlerFunc {
 		}
 		fmt.Println(getListResp)
 
-		fileResp, _, err := newsdk.Files().Upload("models.go").Exec()
+		getListResp2, _, err := newsdk.Items("order_product").
+			GetList().
+			Page(1).
+			Limit(20).
+			Filter(map[string]any{
+				"quantity": map[string]any{
+					"$gte": 4,
+				}},
+			).
+			Exec()
 		if err != nil {
 			clientErrorMessage = "Error on getting request body"
 			handleResponse(w, returnError(clientErrorMessage, err.Error()), http.StatusBadRequest)
 			return
 		}
-
-		fmt.Println(fileResp)
+		fmt.Println(getListResp2)
 
 		requestByte, err := io.ReadAll(r.Body)
 		if err != nil {

@@ -80,22 +80,6 @@ if err != nil {
 fmt.Printf("Retrieved objects: %+v\n", objectList)
 ```
 
-#### Get Single Slim
-
-To retrieve a single object with selected relations:
-
-```go
-
-singleSlimObject, response, err := ucodeApi.Items("your_table_slug").
-    GetSingle("object_guid").
-    ExecSlim() // Use Exec() for simple
-if err != nil {
-    log.Fatalf("Error retrieving single slim object: %v", err)
-}
-
-fmt.Printf("Retrieved slim object: %+v\n", singleSlimObject)
-```
-
 #### Get List Aggregation
 
 To perform an aggregation query (MongoDB only):
@@ -157,7 +141,7 @@ if err != nil {
 fmt.Printf("Updated object: %+v\n", updatedObject)
 ```
 
-#### Update Multiple Objects
+#### Update Multiple Objects(add is_new: true for multiple create)
 
 ```go
 multiUpdateRequest := map[string]any{
