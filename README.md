@@ -348,7 +348,7 @@ type Response struct {
 
 ## Support
 
-For issues, feature requests, or questions, please refer to the [Ucode documentation](https://docs.ucode.io) or contact support.
+For issues, feature requests, or questions, please refer to the [Ucode documentation](https://ucode.gitbook.io/ucode-docs) or contact support.
 
 ## License
 
