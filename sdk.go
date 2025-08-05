@@ -66,9 +66,10 @@ type UcodeApis interface {
 		Supported across MongoDB and PostgreSQL, providing flexibility for backend processing.
 	*/
 	Function(path string) FunctionI
+
 	Config() *Config
 	DoRequest(url string, method string, body any, headers map[string]string) ([]byte, error)
-	ConnectToEMQX() (mqtt.Client, error)
+	ConnectToMQTT() (mqtt.Client, error)
 }
 
 func New(cfg *Config) UcodeApis {

@@ -4,7 +4,7 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-func (u *object) ConnectToEMQX() (mqtt.Client, error) {
+func (u *object) ConnectToMQTT() (mqtt.Client, error) {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(u.config.MQTTBroker)
 	opts.SetUsername(u.config.MQTTUsername) // Set your username
