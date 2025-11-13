@@ -3,6 +3,7 @@ package ucodesdk
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 
@@ -141,5 +142,13 @@ func (a *object) DoRequest(url string, method string, body any, headers map[stri
 	defer resp.Body.Close()
 
 	respByte, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode >= 300 {
+		return respByte, errors.New(http.StatusText(resp.StatusCode))
+	}
+
 	return respByte, err
 }
