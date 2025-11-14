@@ -172,8 +172,7 @@ func (a *UpdateItem) ExecMultiple() (ClientApiMultipleUpdateResponse, Response, 
 		response = Response{
 			Status: "done",
 		}
-		multipleUpdateObject ClientApiMultipleUpdateResponse
-		url                  = fmt.Sprintf("%s/v2/items/%s?from-ofs=%t", a.config.BaseURL, a.collection, a.data.DisableFaas)
+		url = fmt.Sprintf("%s/v2/items/%s?from-ofs=%t", a.config.BaseURL, a.collection, a.data.DisableFaas)
 	)
 
 	var appId = a.config.AppId
@@ -190,14 +189,10 @@ func (a *UpdateItem) ExecMultiple() (ClientApiMultipleUpdateResponse, Response, 
 		return ClientApiMultipleUpdateResponse{}, response, err
 	}
 
-	err = json.Unmarshal(multipleUpdateObjectsResponseInByte, &multipleUpdateObject)
-	if err != nil {
-		response.Data = map[string]any{"description": string(multipleUpdateObjectsResponseInByte), "message": "Error while unmarshalling multiple update objects", "error": err.Error()}
-		response.Status = "error"
-		return ClientApiMultipleUpdateResponse{}, response, err
-	}
+	response.Status = "done"
+	response.Data = map[string]any{}
 
-	return multipleUpdateObject, response, nil
+	return ClientApiMultipleUpdateResponse{}, response, nil
 }
 
 // DELETE ITEM EXEC
